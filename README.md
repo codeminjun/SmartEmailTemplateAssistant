@@ -231,19 +231,6 @@ classDiagram
 - macOS에서 한글 입력 시 가끔 버퍼링 발생 → JVM 옵션으로 해결 가능
 - 대용량 템플릿 (10,000개 이상) 로딩 시 지연 → 페이징 구현 예정
 
-## 📜 라이센스
-
-이 프로젝트는 MIT 라이센스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
-```
-MIT License
-
-Copyright (c) 2024 [Your Name]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction...
-```
 
 ## 👨‍💻 개발자
 
