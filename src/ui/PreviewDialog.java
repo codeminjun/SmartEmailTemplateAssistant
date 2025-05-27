@@ -12,9 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 이메일 미리보기 다이얼로그
- */
 public class PreviewDialog extends JDialog {
     private EmailTemplate template;
     private JTextArea previewArea;
