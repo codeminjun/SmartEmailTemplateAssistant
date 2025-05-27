@@ -142,9 +142,9 @@ public class MainFrame extends JFrame {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panel.setBackground(Color.WHITE);
 
-        newButton = createStyledButton("새 템플릿", new Color(52, 152, 219), Color.WHITE);
+        newButton = createStyledButton("새 템플릿", new Color(77, 156, 234, 255), Color.WHITE);
         editButton = createStyledButton("수정", new Color(240, 240, 240), Color.BLACK);
-        deleteButton = createStyledButton("삭제", new Color(231, 76, 60), Color.WHITE);
+        deleteButton = createStyledButton("삭제", new Color(255, 84, 67), Color.WHITE);
         previewButton = createStyledButton("미리보기", new Color(240, 240, 240), Color.BLACK);
 
         panel.add(newButton);

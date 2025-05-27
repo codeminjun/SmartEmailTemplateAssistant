@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 /**
  * 이메일 템플릿 데이터를 담는 모델 클래스
  */
+
 public class EmailTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
