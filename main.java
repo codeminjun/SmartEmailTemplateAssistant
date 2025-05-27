@@ -5,7 +5,7 @@ import java.awt.*;
 /**
  * Smart Email Template Assistant 실행 클래스
  */
-public class main {
+public class Main {
     public static void main(String[] args) {
         // 한글 입력 문제 해결을 위한 설정
         System.setProperty("apple.awt.UIElement", "false");

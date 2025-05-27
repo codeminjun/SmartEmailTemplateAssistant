@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 이메일 미리보기 다이얼로그
+ */
 public class PreviewDialog extends JDialog {
     private EmailTemplate template;
     private JTextArea previewArea;
@@ -157,16 +160,24 @@ public class PreviewDialog extends JDialog {
         panel.setBackground(Color.WHITE);
 
         copyButton = createStyledButton("클립보드에 복사", new Color(52, 152, 219), Color.WHITE);
+        JButton emailButton = createStyledButton("이메일 발송", new Color(155, 89, 182), Color.WHITE);
         closeButton = createStyledButton("닫기", new Color(240, 240, 240), Color.BLACK);
 
         panel.add(copyButton);
+        panel.add(emailButton);
         panel.add(closeButton);
 
         // 이벤트 리스너
         copyButton.addActionListener(e -> copyToClipboard());
+        emailButton.addActionListener(e -> sendEmail());
         closeButton.addActionListener(e -> dispose());
 
         return panel;
+    }
+
+    private void sendEmail() {
+        EmailDialog emailDialog = new EmailDialog((Frame) getOwner(), previewArea.getText());
+        emailDialog.setVisible(true);
     }
 
     private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
