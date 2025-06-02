@@ -19,17 +19,42 @@ public class PreviewDialog extends JDialog {
     private EmailTemplate template;
     private JTextArea previewArea;
     private JButton copyButton;
+    private JButton emailButton;
     private JButton closeButton;
     private Map<String, JTextField> variableFields;
     private JPanel variablePanel;
+
+    // 다크모드 관련
+    private boolean isDarkMode = false;
+    private static final Color DARK_BG = new Color(30, 30, 30);
+    private static final Color DARK_PANEL = new Color(45, 45, 45);
+    private static final Color DARK_TEXT = new Color(220, 220, 220);
+    private static final Color DARK_BORDER = new Color(60, 60, 60);
 
     public PreviewDialog(Frame parent, EmailTemplate template) {
         super(parent, "템플릿 미리보기", true);
         this.template = template;
         this.variableFields = new HashMap<>();
 
+        // 부모 프레임에서 다크모드 상태 가져오기
+        if (parent instanceof MainFrame) {
+            this.isDarkMode = ((MainFrame) parent).isDarkMode();
+        }
+
         initUI();
         updatePreview();
+
+        // 다크모드 적용
+        if (isDarkMode) {
+            applyDarkMode();
+        }
+    }
+
+    public void setDarkMode(boolean darkMode) {
+        this.isDarkMode = darkMode;
+        if (darkMode) {
+            applyDarkMode();
+        }
     }
 
     private void initUI() {
@@ -64,13 +89,26 @@ public class PreviewDialog extends JDialog {
 
     private JPanel createInfoPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.setBorder(BorderFactory.createTitledBorder("템플릿 정보"));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(isDarkMode ? DARK_BORDER : Color.GRAY),
+                "템플릿 정보",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("맑은 고딕", Font.PLAIN, 12),
+                isDarkMode ? DARK_TEXT : Color.BLACK
+        ));
 
         JLabel titleLabel = new JLabel("제목: " + template.getTitle());
         JLabel categoryLabel = new JLabel("카테고리: " + template.getCategory());
 
         titleLabel.setFont(new Font("맑은 고딕", Font.BOLD, 14));
         categoryLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+
+        if (isDarkMode) {
+            panel.setBackground(DARK_BG);
+            titleLabel.setForeground(DARK_TEXT);
+            categoryLabel.setForeground(DARK_TEXT);
+        }
 
         panel.add(titleLabel);
         panel.add(Box.createHorizontalStrut(20));
@@ -100,12 +138,27 @@ public class PreviewDialog extends JDialog {
             JPanel varPanel = new JPanel(new BorderLayout(5, 5));
             varPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
+            if (isDarkMode) {
+                varPanel.setBackground(DARK_BG);
+            }
+
             JLabel label = new JLabel(variable + ":");
             label.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
             label.setPreferredSize(new Dimension(80, 25));
 
+            if (isDarkMode) {
+                label.setForeground(DARK_TEXT);
+            }
+
             JTextField field = new JTextField();
             field.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+
+            if (isDarkMode) {
+                field.setBackground(DARK_PANEL);
+                field.setForeground(DARK_TEXT);
+                field.setCaretColor(DARK_TEXT);
+                field.setBorder(BorderFactory.createLineBorder(DARK_BORDER));
+            }
 
             // 특별한 변수 처리
             if ("date".equalsIgnoreCase(variable)) {
@@ -132,7 +185,22 @@ public class PreviewDialog extends JDialog {
 
         // 외부 패널 생성
         JPanel outerPanel = new JPanel(new BorderLayout());
-        outerPanel.setBorder(BorderFactory.createTitledBorder("변수 입력"));
+        outerPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(isDarkMode ? DARK_BORDER : Color.GRAY),
+                "변수 입력",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("맑은 고딕", Font.PLAIN, 12),
+                isDarkMode ? DARK_TEXT : Color.BLACK
+        ));
+
+        if (isDarkMode) {
+            outerPanel.setBackground(DARK_BG);
+            innerPanel.setBackground(DARK_BG);
+            scrollPane.getViewport().setBackground(DARK_BG);
+            scrollPane.setBorder(BorderFactory.createLineBorder(DARK_BORDER));
+        }
+
         outerPanel.add(scrollPane, BorderLayout.CENTER);
 
         return outerPanel;
@@ -140,16 +208,36 @@ public class PreviewDialog extends JDialog {
 
     private JPanel createCenterPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("미리보기"));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(isDarkMode ? DARK_BORDER : Color.GRAY),
+                "미리보기",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("맑은 고딕", Font.PLAIN, 12),
+                isDarkMode ? DARK_TEXT : Color.BLACK
+        ));
 
         previewArea = new JTextArea();
         previewArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         previewArea.setLineWrap(true);
         previewArea.setWrapStyleWord(true);
         previewArea.setEditable(false);
-        previewArea.setBackground(new Color(245, 245, 245));
+
+        if (isDarkMode) {
+            panel.setBackground(DARK_BG);
+            previewArea.setBackground(DARK_PANEL);
+            previewArea.setForeground(DARK_TEXT);
+            previewArea.setCaretColor(DARK_TEXT);
+        } else {
+            previewArea.setBackground(new Color(245, 245, 245));
+        }
 
         JScrollPane scrollPane = new JScrollPane(previewArea);
+        if (isDarkMode) {
+            scrollPane.setBorder(BorderFactory.createLineBorder(DARK_BORDER));
+            scrollPane.getViewport().setBackground(DARK_PANEL);
+        }
+
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -157,11 +245,17 @@ public class PreviewDialog extends JDialog {
 
     private JPanel createBottomPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        panel.setBackground(Color.WHITE);
+        panel.setBackground(isDarkMode ? DARK_BG : Color.WHITE);
 
-        copyButton = createStyledButton("클립보드에 복사", new Color(52, 152, 219), Color.WHITE);
-        JButton emailButton = createStyledButton("이메일 발송", new Color(155, 89, 182), Color.WHITE);
-        closeButton = createStyledButton("닫기", new Color(240, 240, 240), Color.BLACK);
+        if (isDarkMode) {
+            copyButton = createStyledButton("클립보드에 복사", new Color(41, 128, 185), Color.WHITE);
+            emailButton = createStyledButton("이메일 발송", new Color(142, 68, 173), Color.WHITE);
+            closeButton = createStyledButton("닫기", new Color(60, 60, 60), DARK_TEXT);
+        } else {
+            copyButton = createStyledButton("클립보드에 복사", new Color(52, 152, 219), Color.WHITE);
+            emailButton = createStyledButton("이메일 발송", new Color(155, 89, 182), Color.WHITE);
+            closeButton = createStyledButton("닫기", new Color(240, 240, 240), Color.BLACK);
+        }
 
         panel.add(copyButton);
         panel.add(emailButton);
@@ -177,6 +271,11 @@ public class PreviewDialog extends JDialog {
 
     private void sendEmail() {
         EmailDialog emailDialog = new EmailDialog((Frame) getOwner(), previewArea.getText());
+        // 다크모드 상태 전달
+        if (emailDialog instanceof EmailDialog && getOwner() instanceof MainFrame) {
+            boolean parentDarkMode = ((MainFrame) getOwner()).isDarkMode();
+            // EmailDialog에 setDarkMode 메소드가 있다면 호출
+        }
         emailDialog.setVisible(true);
     }
 
@@ -242,5 +341,27 @@ public class PreviewDialog extends JDialog {
                 "클립보드에 복사되었습니다!",
                 "복사 완료",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void applyDarkMode() {
+        getContentPane().setBackground(DARK_BG);
+        if (getContentPane() instanceof JPanel) {
+            ((JPanel) getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
+            applyDarkModeToComponent(getContentPane());
+        }
+    }
+
+    private void applyDarkModeToComponent(Container container) {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JPanel) {
+                comp.setBackground(DARK_BG);
+            } else if (comp instanceof JLabel) {
+                comp.setForeground(DARK_TEXT);
+            }
+
+            if (comp instanceof Container) {
+                applyDarkModeToComponent((Container) comp);
+            }
+        }
     }
 }

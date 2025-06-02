@@ -278,6 +278,10 @@ public class MainFrame extends JFrame {
 
     private void showTemplateDialog(EmailTemplate template) {
         TemplateDialog dialog = new TemplateDialog(this, template, templateManager);
+        // 다크모드 상태 전달
+        if (dialog instanceof TemplateDialog) {
+            ((TemplateDialog) dialog).setDarkMode(isDarkMode);
+        }
         dialog.setVisible(true);
     }
 
@@ -309,10 +313,18 @@ public class MainFrame extends JFrame {
         EmailTemplate selected = templateList.getSelectedValue();
         if (selected != null) {
             PreviewDialog dialog = new PreviewDialog(this, selected);
+            // 다크모드 상태 전달
+            if (dialog instanceof PreviewDialog) {
+                ((PreviewDialog) dialog).setDarkMode(isDarkMode);
+            }
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "미리볼 템플릿을 선택해주세요.");
         }
+    }
+
+    public boolean isDarkMode() {
+        return isDarkMode;
     }
 
     private void toggleDarkMode() {
@@ -418,7 +430,18 @@ public class MainFrame extends JFrame {
         for (Component comp : container.getComponents()) {
             if (comp instanceof JPanel) {
                 comp.setBackground(Color.WHITE);
-                // 기존 보더 유지
+                // 라이트모드에서 테두리 재설정
+                if (comp instanceof JPanel && ((JPanel) comp).getBorder() instanceof javax.swing.border.TitledBorder) {
+                    String title = ((javax.swing.border.TitledBorder) ((JPanel) comp).getBorder()).getTitle();
+                    ((JPanel) comp).setBorder(BorderFactory.createTitledBorder(
+                            BorderFactory.createLineBorder(Color.GRAY),
+                            title,
+                            javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                            javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                            new Font("맑은 고딕", Font.PLAIN, 12),
+                            Color.BLACK
+                    ));
+                }
             } else if (comp instanceof JLabel) {
                 comp.setForeground(Color.BLACK);
             } else if (comp instanceof JCheckBox) {
@@ -433,7 +456,7 @@ public class MainFrame extends JFrame {
             } else if (comp instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane) comp;
                 scrollPane.getViewport().setBackground(Color.WHITE);
-                scrollPane.setBorder(UIManager.getBorder("ScrollPane.border"));
+                scrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
             }
 
             if (comp instanceof Container) {
