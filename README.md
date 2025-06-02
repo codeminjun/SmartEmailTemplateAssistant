@@ -20,7 +20,7 @@
 - [프로젝트 구조](#-프로젝트-구조)
 - [기술 스택](#-기술-스택)
 - [기여하기](#-기여하기)
-- [라이센스](#-라이센스)
+
 
 ## 🎯 소개
 
@@ -234,24 +234,12 @@ SmartEmailTemplateAssistant/
 - macOS에서 한글 입력 시 가끔 버퍼링 발생 → 설정으로 해결
 - Gmail 발송 시 앱 비밀번호 필요 (일반 비밀번호 사용 불가)
 
-## 📜 라이센스
-
-이 프로젝트는 MIT 라이센스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
 ## 👨‍💻 개발자
 
 - **개발자**: MinJun Kim
-- **이메일**: your.email@example.com
+- **이메일**: koexmin@gmail.com
 - **GitHub**: [@codeminjun](https://github.com/codeminjun)
 
-## 🙏 감사의 말
-
-이 프로젝트를 사용해주시는 모든 분들께 감사드립니다. 여러분의 피드백이 더 나은 프로그램을 만드는 원동력이 됩니다!
-
-### 특별히 감사드립니다
-- JavaMail API 개발팀
-- Swing UI 커뮤니티
-- 모든 오픈소스 기여자들
 
 ---
 
