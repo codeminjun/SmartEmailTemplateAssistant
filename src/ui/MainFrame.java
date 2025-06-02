@@ -7,7 +7,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * 메인 프레임 클래스
@@ -22,13 +26,31 @@ public class MainFrame extends JFrame {
     private JButton newButton;
     private JButton editButton;
     private JButton deleteButton;
-    private JButton previewButton;
     private JCheckBox favoriteCheckBox;
+    private JToggleButton darkModeButton;
+
+    // 다크모드 색상
+    private static final Color DARK_BG = new Color(30, 30, 30);
+    private static final Color DARK_PANEL = new Color(45, 45, 45);
+    private static final Color DARK_TEXT = new Color(220, 220, 220);
+    private static final Color DARK_BORDER = new Color(60, 60, 60);
+    private boolean isDarkMode = false;
 
     public MainFrame() {
         templateManager = new TemplateManager();
+
+        // 다크모드 설정 로드
+        loadDarkModeSetting();
+
         initUI();
         loadTemplates();
+
+        // 초기 테마 적용
+        if (isDarkMode) {
+            darkModeButton.setSelected(true);
+            darkModeButton.setText("☀️");
+            applyTheme();
+        }
 
         // 템플릿 변경 리스너 등록
         templateManager.addChangeListener(this::loadTemplates);
@@ -95,9 +117,18 @@ public class MainFrame extends JFrame {
         favoriteCheckBox = new JCheckBox("즐겨찾기만 보기");
         favoriteCheckBox.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
 
+        // 다크모드 토글 버튼
+        darkModeButton = new JToggleButton("🌙");
+        darkModeButton.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+        darkModeButton.setToolTipText("다크모드 전환");
+        darkModeButton.setPreferredSize(new Dimension(50, 30));
+        darkModeButton.addActionListener(e -> toggleDarkMode());
+
         filterPanel.add(categoryLabel);
         filterPanel.add(categoryCombo);
         filterPanel.add(favoriteCheckBox);
+        filterPanel.add(Box.createHorizontalStrut(20));
+        filterPanel.add(darkModeButton);
 
         panel.add(searchPanel, BorderLayout.NORTH);
         panel.add(filterPanel, BorderLayout.SOUTH);
@@ -142,21 +173,18 @@ public class MainFrame extends JFrame {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panel.setBackground(Color.WHITE);
 
-        newButton = createStyledButton("새 템플릿", new Color(77, 156, 234, 255), Color.WHITE);
+        newButton = createStyledButton("새 템플릿", new Color(52, 152, 219), Color.WHITE);
         editButton = createStyledButton("수정", new Color(240, 240, 240), Color.BLACK);
-        deleteButton = createStyledButton("삭제", new Color(255, 84, 67), Color.WHITE);
-        previewButton = createStyledButton("미리보기", new Color(240, 240, 240), Color.BLACK);
+        deleteButton = createStyledButton("삭제", new Color(231, 76, 60), Color.WHITE);
 
         panel.add(newButton);
         panel.add(editButton);
         panel.add(deleteButton);
-        panel.add(previewButton);
 
         // 이벤트 리스너
         newButton.addActionListener(e -> showTemplateDialog(null));
         editButton.addActionListener(e -> editTemplate());
         deleteButton.addActionListener(e -> deleteTemplate());
-        previewButton.addActionListener(e -> showPreview());
 
         return panel;
     }
@@ -287,6 +315,186 @@ public class MainFrame extends JFrame {
         }
     }
 
+    private void toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        darkModeButton.setText(isDarkMode ? "☀️" : "🌙");
+        saveDarkModeSetting();
+        applyTheme();
+    }
+
+    private void applyTheme() {
+        SwingUtilities.invokeLater(() -> {
+            if (isDarkMode) {
+                // 다크모드 적용
+                getContentPane().setBackground(DARK_BG);
+                applyDarkThemeToComponent(getContentPane());
+
+                // 리스트 스타일
+                templateList.setBackground(DARK_PANEL);
+                templateList.setForeground(DARK_TEXT);
+                templateList.setSelectionBackground(new Color(70, 70, 70));
+                templateList.setSelectionForeground(Color.WHITE);
+
+                // 텍스트 필드 스타일
+                searchField.setBackground(DARK_PANEL);
+                searchField.setForeground(DARK_TEXT);
+                searchField.setCaretColor(DARK_TEXT);
+
+                // 콤보박스 스타일
+                categoryCombo.setBackground(DARK_PANEL);
+                categoryCombo.setForeground(DARK_TEXT);
+
+                // 버튼 색상 업데이트
+                updateButtonColors(true);
+            } else {
+                // 라이트모드 적용
+                getContentPane().setBackground(Color.WHITE);
+                applyLightThemeToComponent(getContentPane());
+
+                // 리스트 스타일
+                templateList.setBackground(Color.WHITE);
+                templateList.setForeground(Color.BLACK);
+                templateList.setSelectionBackground(UIManager.getColor("List.selectionBackground"));
+                templateList.setSelectionForeground(UIManager.getColor("List.selectionForeground"));
+
+                // 텍스트 필드 스타일
+                searchField.setBackground(Color.WHITE);
+                searchField.setForeground(Color.BLACK);
+                searchField.setCaretColor(Color.BLACK);
+
+                // 콤보박스 스타일
+                categoryCombo.setBackground(Color.WHITE);
+                categoryCombo.setForeground(Color.BLACK);
+
+                // 버튼 색상 업데이트
+                updateButtonColors(false);
+            }
+
+            // 전체 UI 새로고침
+            SwingUtilities.updateComponentTreeUI(this);
+            repaint();
+        });
+    }
+
+    private void applyDarkThemeToComponent(Container container) {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JPanel) {
+                comp.setBackground(DARK_BG);
+                if (comp instanceof JPanel && ((JPanel) comp).getBorder() != null) {
+                    ((JPanel) comp).setBorder(BorderFactory.createTitledBorder(
+                            BorderFactory.createLineBorder(DARK_BORDER),
+                            ((JPanel) comp).getBorder() instanceof javax.swing.border.TitledBorder ?
+                                    ((javax.swing.border.TitledBorder) ((JPanel) comp).getBorder()).getTitle() : "",
+                            javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                            javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                            new Font("맑은 고딕", Font.PLAIN, 12),
+                            DARK_TEXT
+                    ));
+                }
+            } else if (comp instanceof JLabel) {
+                comp.setForeground(DARK_TEXT);
+            } else if (comp instanceof JCheckBox) {
+                comp.setBackground(DARK_BG);
+                comp.setForeground(DARK_TEXT);
+            } else if (comp instanceof JButton && !(comp instanceof JToggleButton)) {
+                // 스타일 버튼은 별도 처리
+                if (comp != newButton && comp != editButton && comp != deleteButton) {
+                    comp.setBackground(DARK_PANEL);
+                    comp.setForeground(DARK_TEXT);
+                }
+            } else if (comp instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane) comp;
+                scrollPane.getViewport().setBackground(DARK_PANEL);
+                scrollPane.setBorder(BorderFactory.createLineBorder(DARK_BORDER));
+            }
+
+            if (comp instanceof Container) {
+                applyDarkThemeToComponent((Container) comp);
+            }
+        }
+    }
+
+    private void applyLightThemeToComponent(Container container) {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JPanel) {
+                comp.setBackground(Color.WHITE);
+                // 기존 보더 유지
+            } else if (comp instanceof JLabel) {
+                comp.setForeground(Color.BLACK);
+            } else if (comp instanceof JCheckBox) {
+                comp.setBackground(Color.WHITE);
+                comp.setForeground(Color.BLACK);
+            } else if (comp instanceof JButton && !(comp instanceof JToggleButton)) {
+                // 스타일 버튼은 별도 처리
+                if (comp != newButton && comp != editButton && comp != deleteButton) {
+                    comp.setBackground(UIManager.getColor("Button.background"));
+                    comp.setForeground(Color.BLACK);
+                }
+            } else if (comp instanceof JScrollPane) {
+                JScrollPane scrollPane = (JScrollPane) comp;
+                scrollPane.getViewport().setBackground(Color.WHITE);
+                scrollPane.setBorder(UIManager.getBorder("ScrollPane.border"));
+            }
+
+            if (comp instanceof Container) {
+                applyLightThemeToComponent((Container) comp);
+            }
+        }
+    }
+
+    private void updateButtonColors(boolean isDark) {
+        // 버튼 재생성
+        Container parent = newButton.getParent();
+        parent.remove(newButton);
+        parent.remove(editButton);
+        parent.remove(deleteButton);
+
+        if (isDark) {
+            newButton = createStyledButton("새 템플릿", new Color(41, 128, 185), Color.WHITE);
+            editButton = createStyledButton("수정", new Color(60, 60, 60), DARK_TEXT);
+            deleteButton = createStyledButton("삭제", new Color(192, 57, 43), Color.WHITE);
+        } else {
+            newButton = createStyledButton("새 템플릿", new Color(52, 152, 219), Color.WHITE);
+            editButton = createStyledButton("수정", new Color(240, 240, 240), Color.BLACK);
+            deleteButton = createStyledButton("삭제", new Color(231, 76, 60), Color.WHITE);
+        }
+
+        parent.add(newButton);
+        parent.add(editButton);
+        parent.add(deleteButton);
+
+        // 이벤트 리스너 재등록
+        newButton.addActionListener(e -> showTemplateDialog(null));
+        editButton.addActionListener(e -> editTemplate());
+        deleteButton.addActionListener(e -> deleteTemplate());
+
+        parent.revalidate();
+        parent.repaint();
+    }
+
+    private void loadDarkModeSetting() {
+        try {
+            File settingsFile = new File("settings.properties");
+            if (settingsFile.exists()) {
+                Properties props = new Properties();
+                props.load(new FileInputStream(settingsFile));
+                isDarkMode = Boolean.parseBoolean(props.getProperty("darkMode", "false"));
+            }
+        } catch (Exception e) {
+            // 무시
+        }
+    }
+
+    private void saveDarkModeSetting() {
+        try {
+            Properties props = new Properties();
+            props.setProperty("darkMode", String.valueOf(isDarkMode));
+            props.store(new FileOutputStream("settings.properties"), "Settings");
+        } catch (Exception e) {
+            // 무시
+        }
+    }
+
     /**
      * 커스텀 리스트 셀 렌더러
      */
@@ -305,6 +513,12 @@ public class MainFrame extends JFrame {
                         template.getTitle(),
                         template.getCategory());
                 label.setText(text);
+            }
+
+            // 다크모드 적용
+            if (isDarkMode && !isSelected) {
+                label.setBackground(DARK_PANEL);
+                label.setForeground(DARK_TEXT);
             }
 
             return label;
