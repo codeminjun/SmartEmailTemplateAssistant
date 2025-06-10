@@ -119,6 +119,20 @@ public class TemplateManager {
     }
 
     /**
+     * 즐겨찾기 상태 토글
+     */
+    public void toggleFavorite(Long id) {
+        for (EmailTemplate template : templates) {
+            if (template.getId().equals(id)) {
+                template.setFavorite(!template.isFavorite());
+                saveTemplates();
+                notifyListeners();
+                break;
+            }
+        }
+    }
+
+    /**
      * 모든 카테고리 조회
      */
     public Set<String> getAllCategories() {

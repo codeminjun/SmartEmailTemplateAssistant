@@ -153,10 +153,26 @@ public class MainFrame extends JFrame {
         templateList.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         templateList.setCellRenderer(new TemplateListCellRenderer());
 
-        // 더블클릭 시 미리보기
+        // 마우스 클릭 이벤트 처리
         templateList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                int index = templateList.locationToIndex(e.getPoint());
+                if (index >= 0) {
+                    Rectangle cellBounds = templateList.getCellBounds(index, index);
+                    if (cellBounds.contains(e.getPoint())) {
+                        // 별표 영역 클릭 확인 (오른쪽 30픽셀)
+                        int starAreaX = cellBounds.x + cellBounds.width - 30;
+                        if (e.getX() >= starAreaX) {
+                            // 별표 클릭 - 즐겨찾기 토글
+                            EmailTemplate template = listModel.getElementAt(index);
+                            templateManager.toggleFavorite(template.getId());
+                            return;
+                        }
+                    }
+                }
+                
+                // 더블클릭 시 미리보기
                 if (e.getClickCount() == 2) {
                     showPreview();
                 }
@@ -521,30 +537,65 @@ public class MainFrame extends JFrame {
     /**
      * 커스텀 리스트 셀 렌더러
      */
-    private class TemplateListCellRenderer extends DefaultListCellRenderer {
+    private class TemplateListCellRenderer implements ListCellRenderer<EmailTemplate> {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value,
+        public Component getListCellRendererComponent(JList<? extends EmailTemplate> list, EmailTemplate value,
                                                       int index, boolean isSelected, boolean cellHasFocus) {
 
-            JLabel label = (JLabel) super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
-
-            if (value instanceof EmailTemplate) {
-                EmailTemplate template = (EmailTemplate) value;
-                String text = String.format("%s%s [%s]",
-                        template.isFavorite() ? "★ " : "",
-                        template.getTitle(),
-                        template.getCategory());
-                label.setText(text);
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setOpaque(true);
+            
+            // 텍스트 라벨
+            JLabel textLabel = new JLabel();
+            textLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+            textLabel.setBorder(new EmptyBorder(5, 10, 5, 5));
+            
+            // 별표 라벨
+            JLabel starLabel = new JLabel();
+            starLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 16));
+            starLabel.setBorder(new EmptyBorder(5, 5, 5, 10));
+            starLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            starLabel.setPreferredSize(new Dimension(30, 25));
+            starLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            if (value != null) {
+                // 텍스트 설정
+                String text = String.format("%s [%s]", value.getTitle(), value.getCategory());
+                textLabel.setText(text);
+                
+                // 별표 설정
+                if (value.isFavorite()) {
+                    starLabel.setText("★"); // 채워진 별
+                    starLabel.setForeground(new Color(255, 193, 7)); // 금색
+                } else {
+                    starLabel.setText("☆"); // 빈 별
+                    starLabel.setForeground(Color.GRAY);
+                }
             }
-
-            // 다크모드 적용
-            if (isDarkMode && !isSelected) {
-                label.setBackground(DARK_PANEL);
-                label.setForeground(DARK_TEXT);
+            
+            panel.add(textLabel, BorderLayout.CENTER);
+            panel.add(starLabel, BorderLayout.EAST);
+            
+            // 선택 상태에 따른 색상 설정
+            if (isSelected) {
+                if (isDarkMode) {
+                    panel.setBackground(new Color(70, 70, 70));
+                    textLabel.setForeground(Color.WHITE);
+                } else {
+                    panel.setBackground(UIManager.getColor("List.selectionBackground"));
+                    textLabel.setForeground(UIManager.getColor("List.selectionForeground"));
+                }
+            } else {
+                if (isDarkMode) {
+                    panel.setBackground(DARK_PANEL);
+                    textLabel.setForeground(DARK_TEXT);
+                } else {
+                    panel.setBackground(Color.WHITE);
+                    textLabel.setForeground(Color.BLACK);
+                }
             }
-
-            return label;
+            
+            return panel;
         }
     }
 }
